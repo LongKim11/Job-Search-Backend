@@ -1,10 +1,9 @@
 import { RequestHandler } from 'express';
 import jwt from 'jsonwebtoken';
+import { noAuthRoutesWithAuthService } from '../config/noAuth.config/auth.noAuth';
 
 export const authMiddleware: RequestHandler = (req, res, next): void => {
-  const noAuthRoutes = ['/login', '/register', '/refresh-token'];
-
-  if (noAuthRoutes.includes(req.path)) {
+  if (noAuthRoutesWithAuthService.includes(req.path)) {
     next();
     return;
   }
