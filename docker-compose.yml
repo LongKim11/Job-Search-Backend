@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7
+    container_name: redis-job-search
+    ports:
+      - "6379:6379"
+      
+
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./auth-service/.env.dev
+    depends_on:
+      - redis
