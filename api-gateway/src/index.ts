@@ -1,5 +1,5 @@
-import express, { Request, Response } from 'express';
-import { createProxyMiddleware, Options } from 'http-proxy-middleware';
+import express from 'express';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 import { authMiddleware } from './middleware/auth.middleware';
 import dotenv from 'dotenv';
 import { requireRole } from './middleware/role.middleware';
@@ -11,9 +11,27 @@ const PORT = process.env.PORT || 8080;
 app.use(
   '/api/auth',
   authMiddleware,
-  requireRole('admin'),
+  // requireRole('admin'),
   createProxyMiddleware({
     target: process.env.AUTH_SERVICE_URL || 'http://localhost:3000',
+    changeOrigin: true,
+    on: {
+      proxyReq: (proxyReq, req, res) => {
+        const user = (req as any).user;
+        if (user) {
+          proxyReq.setHeader('X-User-Id', user.accountId || '');
+          proxyReq.setHeader('X-User-Role', user.role || '');
+        }
+      },
+    },
+  })
+);
+
+app.use(
+  '/api/profile',
+  authMiddleware,
+  createProxyMiddleware({
+    target: process.env.AUTH_SERVICE_URL || '',
     changeOrigin: true,
     on: {
       proxyReq: (proxyReq, req, res) => {
