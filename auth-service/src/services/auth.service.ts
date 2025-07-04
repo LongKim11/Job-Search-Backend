@@ -81,7 +81,6 @@ const authService = {
         email: account.email,
         phone: account.phone,
         avatar_url: account.avatar_url,
-        url: account.avatar_url,
         roleId: account.roleId,
       },
     };
@@ -176,6 +175,30 @@ const authService = {
   resendVerificationCode: async (email: string) => {
     return await authService.sendVerificationCode(email, 'email_verification');
   },
+  changePassword: async ({
+    accountId,
+    oldPassword,
+    newPassword,
+  }: {
+    accountId: string;
+    oldPassword: string;
+    newPassword: string;
+  }) => {
+    const account = await prisma.account.findUnique({ where: { id: accountId } });
+    if (!account) throw new Error('Account not found');
+
+    const isMatch = await bcrypt.compare(oldPassword, account.password);
+    if (!isMatch) throw new Error('Old password is incorrect');
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.account.update({
+      where: { id: accountId },
+      data: { password: hashedNewPassword },
+    });
+
+    return { message: 'Password changed successfully' };
+  }
 };
 
 export default authService;

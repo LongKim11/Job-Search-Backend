@@ -74,6 +74,22 @@ const authController = {
       res.status(400).json(errorResponse(err.message));
     }
   },
+  changePassword: async (req: Request, res: Response) => {
+    try {
+      const accountId = req.body.accountId;
+      const { oldPassword, newPassword } = req.body;
+
+      const result = await authService.changePassword({
+        accountId,
+        oldPassword,
+        newPassword,
+      });
+
+      res.status(200).json(successResponse('Password changed', result));
+    } catch (err: any) {
+      res.status(400).json(errorResponse(err.message));
+    }
+  },
 };
 
 export default authController;
