@@ -14,6 +14,7 @@ model RecruiterProfile {
   company_address     String?
   company_size        Int?
   company_description String?
+  account_balance     Float
   created_at          DateTime @default(now())
   account_id          String   @db.Uuid  
   is_verified         Boolean  @default(false)
