@@ -104,6 +104,16 @@ const authController = {
       res.status(400).json(errorResponse(err.message));
     }
   },
+
+  resetPassword: async (req: Request, res: Response) => {
+    const { email, newPassword } = req.body;
+    try {
+      const result = await authService.resetPassword(email, newPassword);
+      res.status(200).json(successResponse('Password reset', result));
+    } catch (err: any) {
+      res.status(400).json(errorResponse(err.message));
+    }
+  },
 };
 
 export default authController;

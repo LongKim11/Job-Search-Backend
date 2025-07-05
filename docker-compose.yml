@@ -9,7 +9,7 @@ services:
     build: ./auth-service
     container_name: auth-service
     ports:
-      - "6000:6000"
+      - "5000:5000"
     env_file:
       - ./auth-service/.env
       - ./auth-service/.env.dev
@@ -19,7 +19,7 @@ services:
     build: ./user-service
     container_name: user-service
     ports:
-      - "6001:6001"
+      - "5001:5001"
     env_file:
       - ./user-service/.env
     depends_on:

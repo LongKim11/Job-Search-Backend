@@ -1,5 +1,5 @@
 export enum VerificationPurpose {
   ACCOUNT_VERIFICATION = 'account_verification',
-  CHANGE_PASSWORD = 'change_password',
   PASSWORD_RESET = 'password_reset',
+  CHANGE_PASSWORD = 'change_password',
 }

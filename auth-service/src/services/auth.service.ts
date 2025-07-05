@@ -2,8 +2,9 @@ import bcrypt from 'bcryptjs';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
-import redis from '../utils/redis';
 import { VerificationPurpose } from '../enums/verificationPurpose.enum';
+import { redisClient, redisPublisher } from '../core/redis.core';
+import { RedisEvent } from '../enums/redisEvent.enum';
 
 const prisma = new PrismaClient();
 
@@ -49,6 +50,14 @@ const authService = {
     });
 
     const verificationUrl = `${process.env.APP_URL}/verify?code=${code}&purpose=${VerificationPurpose.ACCOUNT_VERIFICATION}`;
+    await redisPublisher.publish(
+      RedisEvent.EMAIL_NOTIFICATION,
+      JSON.stringify({
+        to: account.email,
+        content: verificationUrl,
+        purpose: VerificationPurpose.ACCOUNT_VERIFICATION,
+      })
+    );
 
     return {
       account: {
@@ -96,7 +105,7 @@ const authService = {
       { expiresIn: refreshExpiry }
     );
 
-    await redis.set(
+    await redisClient.set(
       `refreshToken:${refreshToken}`,
       account.id,
       'EX',
@@ -121,7 +130,7 @@ const authService = {
   },
 
   refreshToken: async (refreshToken: string) => {
-    const accountId = await redis.get(`refreshToken:${refreshToken}`);
+    const accountId = await redisClient.get(`refreshToken:${refreshToken}`);
     if (!accountId) throw new Error('Refresh token expired or invalid');
 
     const decoded: any = jwt.verify(
@@ -151,8 +160,8 @@ const authService = {
       { expiresIn: refreshExpiry }
     );
 
-    await redis.del(`refreshToken:${refreshToken}`);
-    await redis.set(
+    await redisClient.del(`refreshToken:${refreshToken}`);
+    await redisClient.set(
       `refreshToken:${newRefreshToken}`,
       account.id,
       'EX',
@@ -163,8 +172,10 @@ const authService = {
   },
 
   sendVerificationCode: async (email: string, purpose: string) => {
+    if (!purpose) throw new Error('Verification purpose is required');
+    if (!email) throw new Error('Email is required');
     const account = await prisma.account.findUnique({
-      where: { email, is_active: true },
+      where: { email },
     });
     if (!account) throw new Error('Account not found');
 
@@ -182,6 +193,15 @@ const authService = {
         expired_at: new Date(Date.now() + expiresInMinutes * 60 * 1000),
       },
     });
+
+    await redisPublisher.publish(
+      RedisEvent.EMAIL_NOTIFICATION,
+      JSON.stringify({
+        to: account.email,
+        content: code,
+        purpose: purpose,
+      })
+    );
     return { data: code, message: 'Verification code sent to your email' };
   },
 
@@ -214,7 +234,7 @@ const authService = {
   },
 
   logout: async (refreshToken: string) => {
-    await redis.del(`refreshToken:${refreshToken}`);
+    await redisClient.del(`refreshToken:${refreshToken}`);
     return { message: 'Logged out successfully' };
   },
 
@@ -240,13 +260,27 @@ const authService = {
     }
 
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-
     await prisma.account.update({
       where: { id: accountId },
       data: { password: hashedNewPassword },
     });
 
     return { message: 'Password changed successfully' };
+  },
+
+  resetPassword: async (email: string, newPassword: string) => {
+    const account = await prisma.account.findUnique({
+      where: { email, is_active: true },
+    });
+    if (!account) throw new Error('Account not found');
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    await prisma.account.update({
+      where: { id: account.id },
+      data: { password: hashedNewPassword },
+    });
+
+    return { message: 'Password reset successfully' };
   },
 };
 

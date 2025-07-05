@@ -1,7 +1,6 @@
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 import { logEmailError } from '../utils/logger';
-import { log } from 'console';
 
 dotenv.config();
 
@@ -26,17 +25,13 @@ const emailService = {
     html: string;
   }) => {
     try {
-      const info = await transporter.sendMail({
+      await transporter.sendMail({
         from: `"Notification Service" <${process.env.SMTP_USER}>`,
         to,
         subject,
         html,
       });
-
-      // console.log(`[Email] ✅ Sent to: ${to}, Message ID: ${info.messageId}`);
-      logEmailError(to, `Email sent successfully, Message ID: ${info.messageId}`);
     } catch (error: any) {
-      // console.error(`[Email] ❌ Failed to send to ${to}: ${error.message}`);
       logEmailError(to, error.message);
       throw new Error('Failed to send email');
     }
