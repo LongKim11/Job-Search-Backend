@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { successResponse, errorResponse } from '../uitls/apiReponose';
+import { successResponse, errorResponse } from '../utils/apiReponose';
 import jobSeekerProfileService from '../services/jobSeekerProfile.service';
 
 const jobSeekerProfileController = {
@@ -24,7 +24,9 @@ const jobSeekerProfileController = {
   create: async (req: Request, res: Response) => {
     try {
       const profile = await jobSeekerProfileService.create(req.body);
-      res.status(201).json(successResponse('Created job seeker profile', profile));
+      res
+        .status(201)
+        .json(successResponse('Created job seeker profile', profile));
     } catch (err: any) {
       res.status(400).json(errorResponse(err.message));
     }
@@ -32,8 +34,11 @@ const jobSeekerProfileController = {
 
   update: async (req: Request, res: Response) => {
     try {
-      const profile = await jobSeekerProfileService.update(req.params.id, req.body);
-      res.json(successResponse('Updated job seeker profile', profile));
+      const userId = req.header('X-User-Id');
+      const resume_url = await jobSeekerProfileService.update(userId!, req);
+      res
+        .status(200)
+        .json(successResponse('Resume updated successfully', { resume_url }));
     } catch (err: any) {
       res.status(400).json(errorResponse(err.message));
     }

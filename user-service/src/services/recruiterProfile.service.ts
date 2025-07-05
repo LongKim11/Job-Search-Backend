@@ -1,5 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
+import { Request } from 'express';
+import { deleteFile, uploadFile } from '../utils/storage/supabase.storage';
+import { StorageType } from '../enums/storageType.enum';
 
 const prisma = new PrismaClient();
 
@@ -11,7 +14,6 @@ const recruiterProfileService = {
       prisma.recruiterProfile.findMany({
         skip,
         take: limit,
-        orderBy: { created_at: 'desc' },
       }),
       prisma.recruiterProfile.count(),
     ]);
@@ -42,6 +44,35 @@ const recruiterProfileService = {
       where: { id },
       data,
     });
+  },
+
+  updateBussinessLicense: async (userId: string, req: Request) => {
+    if (!req.file) throw new Error('Missing business license file');
+
+    const recruiterInfor = await prisma.recruiterProfile.findUnique({
+      where: { account_id: userId },
+    });
+    if (!recruiterInfor) throw new Error('RecruiterInfor not found');
+
+    if (recruiterInfor.business_license_url) {
+      await deleteFile(
+        recruiterInfor.business_license_url,
+        StorageType.BUSINESS_LICENSE
+      );
+    }
+
+    const newBusinessLicenseUrl = await uploadFile(
+      userId,
+      req.file,
+      StorageType.BUSINESS_LICENSE
+    );
+
+    await prisma.recruiterProfile.update({
+      where: { account_id: userId },
+      data: { business_license_url: newBusinessLicenseUrl },
+    });
+
+    return newBusinessLicenseUrl;
   },
 
   remove: (id: string) => {

@@ -14,14 +14,17 @@
   "description": "",
   "dependencies": {
     "@prisma/client": "^6.10.1",
+    "@supabase/supabase-js": "^2.50.3",
     "cors": "^2.8.5",
     "dotenv": "^16.6.0",
     "express": "^5.1.0",
+    "multer": "^2.0.1",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
+    "@types/multer": "^2.0.0",
     "@types/node": "^24.0.4",
     "nodemon": "^3.1.10",
     "prisma": "^6.10.1",

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { successResponse, errorResponse } from '../uitls/apiReponose';
+import { successResponse, errorResponse } from '../utils/apiReponose';
 import recruiterProfileService from '../services/recruiterProfile.service';
 
 const recruiterProfileController = {
@@ -23,8 +23,18 @@ const recruiterProfileController = {
 
   create: async (req: Request, res: Response) => {
     try {
-      const profile = await recruiterProfileService.create(req.body);
-      res.status(201).json(successResponse('Created recruiter profile', profile));
+      const userId = req.header('X-User-Id');
+      if (userId) {
+        const profile = await recruiterProfileService.create({
+          ...req.body,
+          account_id: userId,
+        });
+        res
+          .status(201)
+          .json(successResponse('Created recruiter profile', profile));
+      } else {
+        res.status(400).json(errorResponse('User ID is required'));
+      }
     } catch (err: any) {
       res.status(400).json(errorResponse(err.message));
     }
@@ -32,8 +42,26 @@ const recruiterProfileController = {
 
   update: async (req: Request, res: Response) => {
     try {
-      const profile = await recruiterProfileService.update(req.params.id, req.body);
+      const profile = await recruiterProfileService.update(
+        req.params.id,
+        req.body
+      );
       res.json(successResponse('Updated recruiter profile', profile));
+    } catch (err: any) {
+      res.status(400).json(errorResponse(err.message));
+    }
+  },
+
+  updateBussinessLicense: async (req: Request, res: Response) => {
+    try {
+      const userId = req.header('X-User-Id');
+      const business_license_url =
+        await recruiterProfileService.updateBussinessLicense(userId!, req);
+      res.status(200).json(
+        successResponse('Bussiness license updated successfully', {
+          business_license_url,
+        })
+      );
     } catch (err: any) {
       res.status(400).json(errorResponse(err.message));
     }

@@ -13,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use('/api/recruiter-profiles', recruiterProfileRoutes);
-app.use('/api/job-seeker-profiles', jobSeekerProfileRoutes);
+app.use(recruiterProfileRoutes);
+app.use(jobSeekerProfileRoutes);
 
 export default app;
