@@ -1,18 +1,20 @@
 import { Request, Response } from 'express';
 import { errorResponse, successResponse } from '../utils/apiResponse';
 import authService from './../services/auth.service';
+import { VerificationPurpose } from '../enums/verificationPurpose.enum';
 
 const authController = {
   register: async (req: Request, res: Response) => {
-    const { first_name, last_name, email, password, phone } = req.body;
+    const { first_name, last_name, email, password, phone, role_id } = req.body;
     try {
-      const account = await authService.register({
+      const account = await authService.register(
         first_name,
         last_name,
         email,
         password,
         phone,
-      });
+        role_id
+      );
       res.status(201).json(successResponse('Register successful', account));
     } catch (err: any) {
       res.status(400).json(errorResponse(err.message));
@@ -52,30 +54,42 @@ const authController = {
   },
 
   verifyEmail: async (req: Request, res: Response) => {
-    const { code } = req.body;
-    const userId = req.header('X-User-Id');
-    const userRole = req.header('X-User-Role');
+    const { code, purpose } = req.query;
+    if (!code || typeof code !== 'string') {
+      res.status(400).json(errorResponse('Missing verification code'));
+      return;
+    }
+    if (!purpose || typeof purpose !== 'string') {
+      res.status(400).json(errorResponse('Missing verification purpose'));
+      return;
+    }
     try {
-      await authService.verifyEmail(code);
-      res.status(200).json(successResponse('Email verified successfully'));
+      await authService.verifyEmail(code, purpose);
+      if (purpose === VerificationPurpose.ACCOUNT_VERIFICATION) {
+        res.redirect(302, process.env.LOGIN_URL || '');
+      } else {
+        res.status(200).json(successResponse('Email verified successfully'));
+      }
     } catch (err: any) {
       res.status(400).json(errorResponse(err.message));
     }
   },
 
-  resendVerificationCode: async (req: Request, res: Response) => {
-    const { email } = req.body;
+  sendVerificationCode: async (req: Request, res: Response) => {
+    const { email, purpose } = req.body;
     try {
-      await authService.resendVerificationCode(email);
+      const { data } = await authService.sendVerificationCode(email, purpose);
       res
         .status(200)
-        .json(successResponse('Verification code resent successfully'));
+        .json(successResponse('Verification code sent successfully', data));
     } catch (err: any) {
       res.status(400).json(errorResponse(err.message));
     }
   },
+
   changePassword: async (req: Request, res: Response) => {
     try {
+      // Account ID should be passed in JWT instead of body for security
       const accountId = req.body.accountId;
       const { oldPassword, newPassword } = req.body;
 

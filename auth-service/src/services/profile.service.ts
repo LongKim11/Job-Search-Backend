@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client';
-import { supabase } from '../core/supabaseClient.core';
 import { Request } from 'express';
 import { deleteFile, uploadFile } from '../utils/storage/supabase.storage';
 

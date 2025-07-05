@@ -15,6 +15,9 @@ model Account {
   phone      String?
   avatar_url String?
   password   String
+  isVerified Boolean             @default(false)
+  is_active  Boolean             @default(true)  
+  created_at DateTime            @default(now())
   role       Role?               @relation(fields: [roleId], references: [id])
   roleId     String?
   verificationCodes VerificationCode[]
@@ -32,8 +35,9 @@ model VerificationCode {
 }
 
 model Role {
-  id              String    @id @default(uuid())
-  role_name       String
-  role_description String?
-  accounts        Account[]
+  id                String    @id @default(uuid())
+  role_name         String
+  role_description  String?
+  isRoleAdmin       Boolean   @default(false)
+  accounts          Account[]
 }
