@@ -1,7 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import notificationRoutes from './routes/notification.route';
-import './subscribers/notificationSubscriber';
+import './subscribers/notification.subscriber';
 
 dotenv.config();
 

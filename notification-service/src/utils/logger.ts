@@ -3,7 +3,6 @@ import path from 'path';
 
 const logDir = path.join(__dirname, '../../logs');
 
-// Đảm bảo thư mục logs tồn tại
 if (!fs.existsSync(logDir)) {
   fs.mkdirSync(logDir, { recursive: true });
 }
