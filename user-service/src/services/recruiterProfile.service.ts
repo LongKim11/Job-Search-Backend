@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Request } from 'express';
 import { deleteFile, uploadFile } from '../utils/storage/supabase.storage';
 import { StorageType } from '../enums/storageType.enum';
+import { DepositType } from '../enums/depositType.enum';
 
 const prisma = new PrismaClient();
 
@@ -73,6 +74,26 @@ const recruiterProfileService = {
     });
 
     return newBusinessLicenseUrl;
+  },
+
+  updateAccountBalance: async (
+    userId: string,
+    amount: number,
+    type: string
+  ) => {
+    const recruiterProfile = await prisma.recruiterProfile.findUnique({
+      where: { account_id: userId },
+    });
+    if (!recruiterProfile) throw new Error('Recruiter profile not found');
+    const newBalance =
+      DepositType.CREDIT === type
+        ? Number(recruiterProfile.account_balance || 0) + Number(amount)
+        : (Number(recruiterProfile.account_balance) || 0) - Number(amount);
+
+    return prisma.recruiterProfile.update({
+      where: { account_id: userId },
+      data: { account_balance: Number(newBalance) },
+    });
   },
 
   remove: (id: string) => {
