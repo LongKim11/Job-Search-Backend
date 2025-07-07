@@ -18,6 +18,11 @@ const jobSchema = new mongoose.Schema(
     location_id: { type: String, required: true },
     job_type_id: { type: String, required: true },
     job_level_id: { type: String, required: true },
+    skills: {
+      type: Map,
+      of: String,
+      default: {},
+    },
   },
   { timestamps: true, _id: false }
 );
