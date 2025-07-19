@@ -1,6 +1,5 @@
 import { SubscriptionPlanDocument } from '../interfaces/subscriptionPlan.interface';
 import SubscriptionPlan from '../models/subscriptionPlan.model';
-import { v4 as uuidv4 } from 'uuid';
 
 const subscriptionPlanService = {
   getAll: async (options: {

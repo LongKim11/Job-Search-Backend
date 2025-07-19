@@ -1,5 +1,4 @@
 import RecruiterSubscription from '../models/recruiterSubscription.model';
-import SubscriptionPlan from '../models/subscriptionPlan.model';
 
 const recruiterSubscriptionService = {
   getAllByRecruiter: async (recruiterId: string) => {
