@@ -1,9 +1,18 @@
 import { Router } from 'express';
-import { createJob, getJobs } from '../controllers/job.controller';
+import jobController from '../controllers/job.controller';
 
 const router = Router();
 
-router.post('/', createJob);
-router.get('/', getJobs);
+// Admin
+router.get('/all', jobController.getAll);
+router.patch('/:slug/status', jobController.updateStatus);
+
+// Public get detail
+router.get('/:slug', jobController.getDetail);
+
+// Recruiter
+router.get('/', jobController.getByRecruiter);
+router.post('/', jobController.create);
+router.put('/:slug', jobController.update);
 
 export default router;
