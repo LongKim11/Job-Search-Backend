@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import subscriptionPlan from './routes/subscriptionPlan.route';
 import recruiterSubscription from './routes/recruiterSubscription.route';
 import recruiterSubscriptionUsage from './routes/recruiterSubscriptionUsage.route';
+import './subscribers/jobPost.subscriber';
 
 dotenv.config();
 
